@@ -1,14 +1,16 @@
 package de.metasearch
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import de.metasearch.QueryAnchor.Query
+import de.metasearch.QueryAnchor.MetaQuery
+import de.metasearch.SchroogleQueryActor.Query
 
-class QueryAnchor extends Actor with ActorLogging {
 
-  val schroogleQueryActor = context.system.actorOf(SchroogleQueryActor.props, "schroogleQueryActor")
+class QueryAnchor(aggregator: ActorRef) extends Actor with ActorLogging {
+
+  val schroogleQueryActor = context.system.actorOf(SchroogleQueryActor.props(aggregator), "schroogleQueryActor")
 
   def receive = {
-    case Query(queryString) => {
+    case MetaQuery(queryString) => {
       log.info("Query received (from " + sender() + "): " + queryString)
       schroogleQueryActor ! Query(queryString)
     }
@@ -17,8 +19,8 @@ class QueryAnchor extends Actor with ActorLogging {
 
 object QueryAnchor {
 
-  def props: Props = Props[QueryAnchor]
+  def props(aggregator: ActorRef): Props = Props(new QueryAnchor(aggregator))
 
-  final case class Query(query: String)
+  final case class MetaQuery(query: String)
 
 }

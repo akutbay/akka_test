@@ -1,18 +1,24 @@
 package de.metasearch
 
+
 import akka.actor.{ActorRef, ActorSystem}
+import akka.event.jul.Logger
+import de.metasearch.QueryAnchor.MetaQuery
 
 
 object Main extends App {
-  val system: ActorSystem = ActorSystem("helloAkka")
 
+  private val logger = Logger("mainlogger")
 
-  // create query anchor (which creates query actors
-  private val queryAnchor: ActorRef = system.actorOf(QueryAnchor.props, "queryAnchor")
+  private val system: ActorSystem = ActorSystem("actorsystem")
 
+  private val aggregator: ActorRef = system.actorOf(Aggregator.props, "aggregator")
 
-  private val aggragator: ActorRef = system.actorOf(Aggregator.props, "aggregator")
-  // create aggregator
+  private val queryAnchor: ActorRef = system.actorOf(QueryAnchor.props(aggregator), "queryAnchor")
+
+  logger.info("sending message")
+  queryAnchor ! MetaQuery("der großartige suchstring")
+
 
 }
 
